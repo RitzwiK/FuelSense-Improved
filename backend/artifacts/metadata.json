@@ -1,0 +1,195 @@
+{
+  "model_type": "RandomForestRegressor (log-target)",
+  "trained_at": "2026-06-26T17:42:43.558370Z",
+  "n_samples": 942,
+  "n_features_raw": 6,
+  "n_features_encoded": 43,
+  "dataset_sha256_16": "64a3b5728b063484",
+  "metrics": {
+    "test_r2": 0.9401,
+    "test_mae": 1.218,
+    "test_rmse": 2.5046,
+    "cv_r2_mean": 0.8967,
+    "cv_r2_std": 0.0372
+  },
+  "feature_importances": [
+    {
+      "feature": "CO2 Rating",
+      "importance": 0.30565
+    },
+    {
+      "feature": "Vehicle Class_Motorcycle",
+      "importance": 0.25567
+    },
+    {
+      "feature": "Engine Size",
+      "importance": 0.20271
+    },
+    {
+      "feature": "Cylinders",
+      "importance": 0.10452
+    },
+    {
+      "feature": "Vehicle Class_Scooter",
+      "importance": 0.04141
+    },
+    {
+      "feature": "TransFam_CVT",
+      "importance": 0.01802
+    },
+    {
+      "feature": "FuelN_Diesel",
+      "importance": 0.01613
+    },
+    {
+      "feature": "Vehicle Class_SUV",
+      "importance": 0.01263
+    },
+    {
+      "feature": "Vehicle Class_Sedan",
+      "importance": 0.01001
+    },
+    {
+      "feature": "TransFam_Automatic",
+      "importance": 0.00483
+    },
+    {
+      "feature": "FuelN_Gasoline",
+      "importance": 0.00471
+    },
+    {
+      "feature": "FuelN_Ethanol",
+      "importance": 0.00468
+    },
+    {
+      "feature": "Vehicle Class_SUV: Small",
+      "importance": 0.00395
+    },
+    {
+      "feature": "TransFam_Manual",
+      "importance": 0.00287
+    },
+    {
+      "feature": "Vehicle Class_Hatchback",
+      "importance": 0.0021
+    },
+    {
+      "feature": "Vehicle Class_MPV",
+      "importance": 0.00178
+    },
+    {
+      "feature": "Vehicle Class_Bike",
+      "importance": 0.00178
+    },
+    {
+      "feature": "Vehicle Class_Pickup",
+      "importance": 0.00162
+    },
+    {
+      "feature": "FuelN_Electric",
+      "importance": 0.0012
+    },
+    {
+      "feature": "Vehicle Class_Mini Truck",
+      "importance": 0.00054
+    },
+    {
+      "feature": "Vehicle Class_Mid-size",
+      "importance": 0.00035
+    },
+    {
+      "feature": "Vehicle Class_Truck",
+      "importance": 0.00035
+    },
+    {
+      "feature": "Vehicle Class_Compact",
+      "importance": 0.00031
+    },
+    {
+      "feature": "Vehicle Class_Auto Rickshaw",
+      "importance": 0.00031
+    },
+    {
+      "feature": "TransFam_AutoSelect",
+      "importance": 0.0003
+    },
+    {
+      "feature": "Vehicle Class_SUV: Standard",
+      "importance": 0.00027
+    },
+    {
+      "feature": "TransFam_AutoManual",
+      "importance": 0.00024
+    },
+    {
+      "feature": "Vehicle Class_Pickup truck: Standard",
+      "importance": 0.00022
+    },
+    {
+      "feature": "Vehicle Class_Two-seater",
+      "importance": 0.00019
+    },
+    {
+      "feature": "Vehicle Class_Full-size",
+      "importance": 0.00018
+    },
+    {
+      "feature": "Vehicle Class_Electric Scooter",
+      "importance": 0.00018
+    },
+    {
+      "feature": "Vehicle Class_Subcompact",
+      "importance": 9e-05
+    },
+    {
+      "feature": "Vehicle Class_Electric Auto",
+      "importance": 6e-05
+    },
+    {
+      "feature": "Vehicle Class_Station wagon: Small",
+      "importance": 5e-05
+    },
+    {
+      "feature": "Vehicle Class_Minicompact",
+      "importance": 3e-05
+    },
+    {
+      "feature": "Vehicle Class_Special purpose vehicle",
+      "importance": 3e-05
+    },
+    {
+      "feature": "Vehicle Class_Pickup truck: Small",
+      "importance": 3e-05
+    },
+    {
+      "feature": "Vehicle Class_Minivan",
+      "importance": 0.0
+    },
+    {
+      "feature": "Vehicle Class_Station wagon: Mid-size",
+      "importance": 0.0
+    },
+    {
+      "feature": "Vehicle Class_Compact SUV",
+      "importance": 0.0
+    },
+    {
+      "feature": "Vehicle Class_Crossover",
+      "importance": 0.0
+    },
+    {
+      "feature": "Vehicle Class_Electric Vehicle",
+      "importance": 0.0
+    },
+    {
+      "feature": "Vehicle Class_Sports Car",
+      "importance": 0.0
+    }
+  ],
+  "target_stats": {
+    "min": 0.85,
+    "max": 87.5,
+    "mean": 14.11,
+    "median": 11.25
+  }
+}

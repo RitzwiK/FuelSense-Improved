@@ -1,0 +1,209 @@
+/* ========================================================================
+   FuelSense · "Mercury" design system
+   Silver-Surfer chrome + Apple Liquid Glass. Instrument-cluster precision.
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---- void + panels ---- */
+  --void:        #050507;
+  --void-2:      #07080b;
+  --panel:       #0a0b0f;
+  --panel-2:     #0e1015;
+  --hairline:    rgba(214, 222, 240, 0.08);
+  --hairline-2:  rgba(214, 222, 240, 0.14);
+
+  /* ---- chrome ramp (the Silver Surfer) ---- */
+  --chrome-0:    #f5f7ff;
+  --chrome-1:    #e8eaf0;
+  --chrome-2:    #c3c8d4;
+  --chrome-3:    #9aa0ad;
+  --chrome-4:    #6b7080;
+  --chrome-5:    #4a4d57;
+
+  /* ---- text ---- */
+  --ink:         #eef1f7;
+  --ink-soft:    #aab0be;
+  --ink-mute:    #6c7280;
+
+  /* ---- single restrained accent (steel-cyan) ---- */
+  --accent:      #8fb4d9;
+  --accent-dim:  rgba(143, 180, 217, 0.16);
+
+  /* ---- efficiency tiers ---- */
+  --t-exceptional: #9fe3c4;
+  --t-excellent:   #bfe0c8;
+  --t-good:        #d9dee6;
+  --t-moderate:    #e8d4a0;
+  --t-high:        #e8a9a0;
+
+  /* ---- glass ---- */
+  --glass-bg:    rgba(18, 21, 28, 0.55);
+  --glass-brd:   rgba(220, 228, 245, 0.10);
+  --glass-hi:    rgba(255, 255, 255, 0.06);
+  --glass-blur:  22px;
+
+  /* ---- geometry ---- */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-slow: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --maxw: 1240px;
+  --gutter: clamp(20px, 5vw, 64px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* WebGL chrome canvas sits behind everything */
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+/* vignette + grain over the canvas to deepen the void */
+.bg-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(143,180,217,0.06), transparent 55%),
+    radial-gradient(100% 120% at 50% 120%, rgba(0,0,0,0.6), transparent 60%),
+    linear-gradient(180deg, rgba(5,5,7,0.2), rgba(5,5,7,0.72));
+}
+
+.app { position: relative; z-index: 2; }
+
+/* ---- type scale ---- */
+.display {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+}
+.mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'tnum' 1; }
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* chrome text fill — the metallic headline treatment */
+.chrome-text {
+  background: linear-gradient(
+    178deg,
+    var(--chrome-0) 0%,
+    var(--chrome-1) 18%,
+    var(--chrome-3) 46%,
+    var(--chrome-5) 58%,
+    var(--chrome-2) 76%,
+    var(--chrome-0) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ---- layout primitives ---- */
+.shell { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); }
+
+.section { padding-block: clamp(64px, 9vw, 130px); position: relative; }
+.section-head { margin-bottom: clamp(28px, 4vw, 52px); max-width: 720px; }
+.section-head h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: clamp(28px, 4.4vw, 52px);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin-top: 14px;
+}
+.section-head p {
+  margin-top: 16px;
+  color: var(--ink-soft);
+  font-size: clamp(15px, 1.6vw, 17px);
+  max-width: 60ch;
+}
+
+/* ---- glass surface ---- */
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-brd);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  box-shadow:
+    0 1px 0 0 var(--glass-hi) inset,
+    0 24px 60px -28px rgba(0,0,0,0.85),
+    0 2px 10px -4px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+/* the soft reflection sweep along the top edge */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-hi) 30%, rgba(255,255,255,0.14) 50%, var(--glass-hi) 70%, transparent);
+  pointer-events: none;
+}
+
+/* hairline divider */
+.rule {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--hairline-2), transparent);
+  margin-block: clamp(28px, 4vw, 48px);
+}
+
+/* utility */
+.row { display: flex; align-items: center; gap: 12px; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; }
+.center { text-align: center; }
+.muted { color: var(--ink-soft); }
+.dim { color: var(--ink-mute); }
+
+/* focus visibility (a11y floor) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  html { scroll-behavior: auto; }
+  #bg-canvas { display: none; }
+}
