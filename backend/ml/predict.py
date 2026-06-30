@@ -131,12 +131,21 @@ def predict(
         segment_label = "the fleet"
     pct = float((segment_fleet < pred).mean() * 100)
 
+    suggestions = _suggestions(
+        pred=pred, engine_size=engine_size, cylinders=cylinders,
+        co2_rating=co2_rating, vehicle_class=vehicle_class,
+        transmission=transmission, fuel_type=fuel_type,
+        is_two_wheeler=is_two_wheeler,
+    )
+
     return {
         "consumption_l_per_100km": pred,
         "consumption_mpg": round(235.215 / pred, 1) if pred > 0 else None,
         "efficiency": band,
         "fleet_percentile": round(pct, 1),  # lower percentile = more efficient
         "comparison_segment": segment_label,
+        "annual_cost": _annual_cost(pred, fuel_type),
+        "suggestions": suggestions,
         "inputs": {
             "engine_size": engine_size,
             "cylinders": cylinders,
@@ -146,3 +155,125 @@ def predict(
             "fuel_type": fuel_type,
         },
     }
+
+
+# Representative pump prices (INR/litre) for the annual-cost estimate. These are
+# only used for a rough cost illustration and are labelled as such in the UI.
+_PUMP_PRICE_INR = {"Gasoline": 100.0, "Diesel": 90.0, "Ethanol": 95.0, "Electric": 0.0}
+_ANNUAL_KM = 12000  # typical annual distance assumption
+
+
+def _annual_cost(pred: float, fuel_type: str) -> dict | None:
+    """Rough annual fuel-cost estimate at 12,000 km/yr. Clearly an estimate."""
+    price = _PUMP_PRICE_INR.get(fuel_type)
+    if not price or pred <= 0:
+        return None
+    litres = pred / 100.0 * _ANNUAL_KM
+    return {
+        "litres_per_year": round(litres),
+        "inr_per_year": round(litres * price),
+        "assumes_km": _ANNUAL_KM,
+        "assumes_price": price,
+        "fuel": fuel_type,
+    }
+
+
+def _counterfactual(base_pred, **overrides):
+    """Re-run the model with one spec changed; return the delta in L/100km."""
+    try:
+        X = build_input_frame(
+            engine_size=overrides["engine_size"],
+            cylinders=overrides["cylinders"],
+            co2_rating=overrides["co2_rating"],
+            vehicle_class=overrides["vehicle_class"],
+            trans_family=overrides["transmission"],
+            fuel_name=overrides["fuel_type"],
+        )
+        alt = float(np.expm1(_model().predict(X)[0]))
+        return round(base_pred - max(0.0, alt), 2)  # +ve = saving
+    except Exception:
+        return None
+
+
+def _suggestions(pred, engine_size, cylinders, co2_rating, vehicle_class,
+                 transmission, fuel_type, is_two_wheeler) -> list:
+    """
+    Build tailored, data-grounded efficiency suggestions.
+
+    Two kinds:
+      - Spec counterfactuals: re-run the REAL model with one attribute changed
+        (smaller engine, fewer cylinders, diesel) and report the actual modelled
+        saving in L/100km. Only surfaced when the saving is material.
+      - Driving/maintenance tips: conditioned on this vehicle's specs, with
+        typical efficiency-gain ranges from published guidance, clearly framed
+        as general ranges rather than model output.
+    """
+    base = dict(engine_size=engine_size, cylinders=cylinders, co2_rating=co2_rating,
+                vehicle_class=vehicle_class, transmission=transmission, fuel_type=fuel_type)
+    out = []
+
+    # --- Spec counterfactuals (real model) ---
+    if engine_size > 1.4:
+        smaller = round(max(1.0, engine_size - 0.5), 1)
+        d = _counterfactual(pred, **{**base, "engine_size": smaller})
+        if d and d >= 0.3:
+            out.append({
+                "type": "spec",
+                "title": f"A {smaller} L engine instead of {engine_size} L",
+                "detail": f"The model predicts about {d} L/100 km lower consumption with a smaller engine of the same configuration.",
+                "saving_l": d,
+            })
+
+    if cylinders >= 6:
+        fewer = cylinders - 2
+        d = _counterfactual(pred, **{**base, "cylinders": fewer})
+        if d and d >= 0.3:
+            out.append({
+                "type": "spec",
+                "title": f"{fewer} cylinders instead of {cylinders}",
+                "detail": f"A {fewer}-cylinder version of this configuration models around {d} L/100 km lower.",
+                "saving_l": d,
+            })
+
+    if fuel_type == "Gasoline":
+        d = _counterfactual(pred, **{**base, "fuel_type": "Diesel"})
+        if d and d >= 0.4:
+            out.append({
+                "type": "spec",
+                "title": "A diesel variant",
+                "detail": f"For this configuration the model predicts roughly {d} L/100 km lower for diesel, though diesel suits high-mileage driving best.",
+                "saving_l": d,
+            })
+
+    if co2_rating and co2_rating <= 4:
+        out.append({
+            "type": "spec",
+            "title": "Look for a higher CO₂ rating",
+            "detail": "This configuration has a low emission rating, which the model associates with higher consumption. A cleaner-rated trim of the same class typically uses less fuel.",
+        })
+
+    # --- Driving & maintenance (conditioned, general ranges) ---
+    tips = []
+    if not is_two_wheeler:
+        tips.append(("Smooth acceleration and braking",
+                     "Aggressive driving can raise consumption 10–30% on the highway and more in the city. Anticipating stops is the single biggest behavioural lever."))
+        if engine_size >= 2.5 or cylinders >= 6:
+            tips.append(("Mind the highway speed",
+                         "Larger engines lose efficiency quickly above ~100 km/h. Every 10 km/h over that can add a few percent to fuel use."))
+        tips.append(("Keep tyres at the right pressure",
+                     "Under-inflated tyres can cut efficiency by around 3%. Check them monthly."))
+        tips.append(("Drop the dead weight",
+                     "Roughly 1–2% per 45 kg removed. Clear out the boot and remove roof racks when unused."))
+        if transmission in ("Automatic", "AutoSelect", "AutoManual"):
+            tips.append(("Use the economy / eco mode",
+                         "If the gearbox has an eco or overdrive mode, it shifts earlier and holds lower revs, which helps on steady drives."))
+    else:
+        tips.append(("Steady throttle",
+                     "Two-wheelers respond strongly to throttle smoothness; gentle inputs and early up-shifts noticeably improve mileage."))
+        tips.append(("Tyre pressure and chain care",
+                     "Correct pressure and a clean, lubricated chain reduce rolling and drivetrain losses."))
+
+    for title, detail in tips:
+        out.append({"type": "behaviour", "title": title, "detail": detail})
+
+    return out

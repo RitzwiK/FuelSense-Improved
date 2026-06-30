@@ -18,24 +18,38 @@ async function api(path, opts) {
   return r.json();
 }
 
-/* ---------------- NAV ---------------- */
+/* ---------------- NAV + ROUTER ---------------- */
+const ROUTES = ['predict', 'analytics', 'dataset'];
+
 function initNav() {
   const nav = $('#nav');
   const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 30);
   onScroll();
   window.addEventListener('scroll', onScroll, { passive: true });
+}
 
-  const links = $$('.nav-link');
-  const sections = links.map(l => $(l.getAttribute('href')));
-  const spy = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        const id = '#' + e.target.id;
-        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
-      }
-    });
-  }, { rootMargin: '-45% 0px -50% 0px' });
-  sections.forEach(s => s && spy.observe(s));
+function currentRoute() {
+  const h = (location.hash || '').replace(/^#\/?/, '');
+  return ROUTES.includes(h) ? h : 'predict';
+}
+
+function showRoute(route) {
+  ROUTES.forEach(r => {
+    const pg = document.getElementById('page-' + r);
+    if (pg) pg.hidden = (r !== route);
+  });
+  $$('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.route === route));
+  // reveal elements on the now-visible page
+  requestAnimationFrame(() => {
+    $$('#page-' + route + ' .reveal').forEach(el => el.classList.add('in'));
+  });
+  window.scrollTo(0, 0);
+}
+
+function initRouter() {
+  if (!location.hash) location.replace('#/predict');
+  window.addEventListener('hashchange', () => showRoute(currentRoute()));
+  showRoute(currentRoute());
 }
 
 /* ---------------- reveal on scroll ---------------- */
@@ -133,6 +147,42 @@ function renderPrediction(res) {
     <div class="tier-pill"><span class="swatch" style="background:${col}"></span>${res.efficiency.label} efficiency</div>
     <div class="tier-note">${res.efficiency.note}</div>
     <div class="tier-context">more efficient than ${fmt(100 - res.fleet_percentile, 0)}% of ${res.comparison_segment || 'the fleet'}</div>`;
+
+  renderSuggestions(res);
+}
+
+function renderSuggestions(res) {
+  const section = $('#suggestSection');
+  if (!section) return;
+
+  // cost banner (only when we have a cost estimate)
+  const cb = $('#costBanner');
+  if (res.annual_cost) {
+    const c = res.annual_cost;
+    cb.style.display = 'flex';
+    cb.innerHTML = `
+      <div class="ci"><span class="l">Estimated fuel cost / year</span><span class="n">₹${c.inr_per_year.toLocaleString('en-IN')}</span></div>
+      <div class="ci"><span class="l">Fuel used / year</span><span class="n">${c.litres_per_year.toLocaleString('en-IN')} L</span></div>
+      <div class="note">Rough estimate at ${c.assumes_km.toLocaleString('en-IN')} km/yr and ₹${c.assumes_price}/L for ${c.fuel.toLowerCase()}.</div>`;
+  } else {
+    cb.style.display = 'none';
+    cb.innerHTML = '';
+  }
+
+  const grid = $('#suggestGrid');
+  const items = res.suggestions || [];
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">This configuration is already efficient — no major changes suggested.</div>`;
+  } else {
+    grid.innerHTML = items.map(s => `
+      <div class="suggest-card ${s.type}">
+        <span class="tag">${s.type === 'spec' ? 'Specification' : 'Driving & upkeep'}</span>
+        <h5>${s.title}</h5>
+        <p>${s.detail}</p>
+        ${s.saving_l ? `<div class="saving">≈ ${fmt(s.saving_l)} L/100 km lower</div>` : ''}
+      </div>`).join('');
+  }
+  section.style.display = 'block';
 }
 
 async function doPredict() {
@@ -367,7 +417,7 @@ function hideLoader() {
 
 /* ---------------- BOOT ---------------- */
 async function boot() {
-  initNav(); initReveal();
+  initNav(); initReveal(); initRouter();
   buildGaugeTicks();
 
   // kick off the loader animation and data fetches in parallel

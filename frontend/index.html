@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FuelSense</title>
   <meta name="description" content="Predict vehicle fuel consumption and explore the 2022 fleet dataset with a real machine-learning model." />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/css/base.css" />
@@ -14,7 +18,6 @@
   <!-- LOADING SCREEN: gas fills the tank -->
   <div id="loader">
     <div class="loader-tank">
-      <span class="nozzle"></span>
       <div class="loader-fill"></div>
       <div class="loader-pct" id="loaderPct">0%</div>
     </div>
@@ -29,14 +32,14 @@
     <!-- NAV -->
     <nav class="nav" id="nav">
       <div class="shell">
-        <a class="brand" href="#top">
+        <a class="brand" href="#/predict">
           <span class="brand-mark"></span>
           <span class="brand-name">Fuel<b>Sense</b></span>
         </a>
         <div class="nav-links">
-          <a class="nav-link" href="#predict">Predict</a>
-          <a class="nav-link" href="#analytics">Analytics</a>
-          <a class="nav-link" href="#explorer">Dataset</a>
+          <a class="nav-link" href="#/predict" data-route="predict">Predict</a>
+          <a class="nav-link" href="#/analytics" data-route="analytics">Analytics</a>
+          <a class="nav-link" href="#/dataset" data-route="dataset">Dataset</a>
         </div>
         <div class="nav-metric" id="navMetric" title="Model accuracy on held-out test data">
           <span class="dot"></span>
@@ -45,7 +48,8 @@
       </div>
     </nav>
 
-    <!-- HERO + PREDICTOR -->
+    <!-- ===================== PAGE: PREDICT ===================== -->
+    <main class="page" id="page-predict">
     <header class="section hero" id="top">
       <a id="predict"></a>
       <div class="shell">
@@ -120,8 +124,24 @@
       </div>
     </header>
 
+      <!-- efficiency suggestions (populated after a prediction) -->
+      <section class="section" id="suggestSection" style="padding-top:0; display:none;">
+        <div class="shell">
+          <div class="section-head">
+            <p class="eyebrow">Personalized Insights</p>
+            <h2 class="display" style="font-size:clamp(26px,3.6vw,40px);">How to use less fuel</h2>
+            <p id="suggestIntro">Suggestions based on this vehicle's configuration and predicted consumption.</p>
+          </div>
+          <div class="cost-banner glass" id="costBanner"></div>
+          <div class="suggest-grid" id="suggestGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===================== PAGE: ANALYTICS ===================== -->
+    <main class="page" id="page-analytics" hidden>
     <!-- ANALYTICS -->
-    <section class="section" id="analytics">
+    <section class="section" id="analytics" style="padding-top: clamp(110px, 14vh, 168px);">
       <div class="shell">
         <div class="section-head reveal">
           <p class="eyebrow">Section 01 · exploratory analysis</p>
@@ -140,9 +160,12 @@
         </div>
       </div>
     </section>
+    </main>
 
+    <!-- ===================== PAGE: DATASET ===================== -->
+    <main class="page" id="page-dataset" hidden>
     <!-- EXPLORER -->
-    <section class="section" id="explorer">
+    <section class="section" id="explorer" style="padding-top: clamp(110px, 14vh, 168px);">
       <div class="shell">
         <div class="section-head reveal">
           <p class="eyebrow">Section 02 · dataset explorer</p>
@@ -182,6 +205,7 @@
         </div>
       </div>
     </section>
+    </main>
 
     <!-- FOOTER -->
     <footer class="footer">
